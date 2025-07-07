@@ -74,12 +74,14 @@ export class PulseOrchestrator implements OnApplicationBootstrap, BeforeApplicat
     const queue = this.getQueue(queueName, queueToken);
     const config = this.getQueueConfig(queueConfigToken);
 
-    this.queues.set(queueToken, {
-      queue,
-      config,
-      processors: new Map(),
-      listeners: new Map(),
-    });
+    if (!this.queues.has(queueToken)) {
+      this.queues.set(queueToken, {
+        queue,
+        config,
+        processors: new Map(),
+        listeners: new Map(),
+      });
+    }
   }
 
   addJobProcessor(
@@ -129,12 +131,16 @@ export class PulseOrchestrator implements OnApplicationBootstrap, BeforeApplicat
 
       const { type, options } = jobConfig;
 
-      if (type === JobProcessorType.EVERY) {
-        await pulse.every((options as RepeatableJobOptions).interval, jobName, {}, options);
+      const existsJob = await pulse.jobs({ name: jobName }, {}, 1);
+
+      if (existsJob.length) {
+        return;
+      } else if (type === JobProcessorType.EVERY) {
+        await pulse.every((options as RepeatableJobOptions).interval, jobName, options.data || {}, options);
       } else if (type === JobProcessorType.SCHEDULE) {
-        await pulse.schedule((options as NonRepeatableJobOptions).when, jobName, {});
+        await pulse.schedule((options as NonRepeatableJobOptions).when, jobName, options.data || {});
       } else if (type === JobProcessorType.NOW) {
-        await pulse.now(jobName, {});
+        await pulse.now(jobName, options.data || {});
       }
     }
   }
