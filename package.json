@@ -1,6 +1,6 @@
 {
   "name": "@elvin-the-elf/nestjs-pulse",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "The modern MongoDB-powered scheduling library pulse for NestJS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

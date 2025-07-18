@@ -134,8 +134,10 @@ export class PulseOrchestrator implements OnApplicationBootstrap, BeforeApplicat
       const existsJob = await pulse.jobs({ name: jobName }, {}, 1);
 
       if (existsJob.length) {
-        return;
-      } else if (type === JobProcessorType.EVERY) {
+        continue;
+      }
+
+      if (type === JobProcessorType.EVERY) {
         await pulse.every((options as RepeatableJobOptions).interval, jobName, options.data || {}, options);
       } else if (type === JobProcessorType.SCHEDULE) {
         await pulse.schedule((options as NonRepeatableJobOptions).when, jobName, options.data || {});
